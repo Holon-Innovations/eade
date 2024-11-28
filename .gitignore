@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 
 tests/dist
+tests/random_files/verylargeblob1.bin

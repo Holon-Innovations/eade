@@ -12,9 +12,9 @@ from eade.rad_engine import RaDEngine
 def distribute_file(test_file: str) -> EaDEngine:
     # create an instance of the engine and distribute the file
     eadengine = EaDEngine(
-        file_path="tests/random_files/largeblob1.bin",
-        total_shares=10,
-        required_shares=5,
+        file_path=test_file,
+        total_shares=3,
+        required_shares=2,
         output_path="tests/dist/")
     eadengine.split_file()
 
