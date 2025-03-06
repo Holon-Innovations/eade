@@ -17,7 +17,7 @@ def test_file(test_total_shares: int, test_remove_segments: int):
     try:
         # make required shares = total shares random / 2
         test_required_shares = int(test_total_shares / 2)
-        print(f"Random file created: {random_file_path}, testing with {test_total_shares} total shares, {test_required_shares} required shares and {test_remove_segments} missing segments.")
+        print(f"\nRandom file created: {random_file_path}, testing with {test_total_shares} total shares, {test_required_shares} required shares and {test_remove_segments} missing segments.")
         test_segments = []
         last_percent = 0
 
@@ -33,8 +33,14 @@ def test_file(test_total_shares: int, test_remove_segments: int):
             print(f"{id} - Distribute complete. File split into {len(segments)} segments.")
             nonlocal test_segments
             nonlocal test_remove_segments
+            print(f"Segment headers:")
             for segment in segments:
+                # append the segment to the test segments
                 test_segments.append(segment)
+
+                # display the header of each segment
+                header = eadengine.decode_header(segment)
+                print(f"  L Segment (index) {header['which_segment']}, Data Len: {header['data_len']}, Parity: {header['is_parity']}")
 
             # for testing, remove the segments from random positions
             if test_remove_segments > 0:
@@ -55,6 +61,7 @@ def test_file(test_total_shares: int, test_remove_segments: int):
         iv  = "tswn0VXbEK0KXqhS".encode()
 
         # create an instance of the engine and distribute the file
+        print(f"Distributing file with {test_total_shares} shares, {test_required_shares} required shares.")
         eadengine = EaDEngine(
             file_path=random_file_path,
             total_shares=test_total_shares,
@@ -75,6 +82,7 @@ def test_file(test_total_shares: int, test_remove_segments: int):
             print("Encryption and distribution complete!")
 
         # restore the file
+        print(f"Restoring file with {len(test_segments)} segments.")
         radengine = RaDEngine(
             output_path="tests/dist/",
             key=key,

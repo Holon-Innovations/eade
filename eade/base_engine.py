@@ -1,6 +1,12 @@
 import os
 import threading
 import time
+import struct
+import uuid
+
+# header length in bytes
+# this includes 16 bytes for the ID, 4 bytes for total_shares, 4 bytes for required_shares, which_segment (4 bytes), reserved (4 bytes), reserved (8 bytes), and data_length (8 bytes)
+HEADER_LENGTH = 48
 
 class BaseEngine:
     def __init__(
@@ -94,3 +100,51 @@ class BaseEngine:
             if self._exception:
                 return False
             return True
+
+    def pack_header(self, data_id: bytes, total_shares: int, required_shares: int, which_segment: int, data_len: int) -> bytes:
+        # create a header, 48 bytes, with the following
+        # data_id (16 bytes)
+        # total_shares (4 bytes)
+        # required_shares (4 bytes)
+        # which_segment (4 bytes)
+        # reserved (4 bytes)
+        # reserved (8 bytes)
+        # data_len (8 bytes)
+        return struct.pack(">16sIIIIQQ", data_id, total_shares, required_shares, which_segment, 0, 0, data_len)
+
+    def unpack_header(self, header: bytes) -> dict:
+        return struct.unpack(">16sIIIIQQ", header)
+
+    def decode_header(self, segment_path: str) -> dict:
+        """
+        Decodes the header of the file to get the key and iv.
+        :param segment_path: The path to the segment file.
+        :return: A dictionary with the header fields.
+        """
+        # The header is a 48-byte string with the following format:
+        # 16 bytes: data_id (binary identifier)
+        # 4 bytes: total_shares
+        # 4 bytes: required_shares
+        # 4 bytes: which_segment
+        # 4 bytes: reserved
+        # 8 bytes: reserved
+        # 8 bytes: data_len
+
+        # decode for a given segment
+        with open(segment_path, "rb") as f:
+            header = f.read(48)
+            if len(header) != 48:
+                raise ValueError(f"Invalid header size: expected 48 bytes, got {len(header)} bytes")
+            try:
+                data_id, total_shares, required_shares, which_segment, res1, res2, data_len = struct.unpack(">16sIIIIQQ", header)
+                return {
+                    "data_id": data_id,
+                    "data_id_str": str(uuid.UUID(bytes=data_id)),
+                    "total_shares": total_shares,
+                    "required_shares": required_shares,
+                    "which_segment": which_segment,
+                    "is_parity": 1 if which_segment + 1 > required_shares else 0,
+                    "data_len": data_len
+                }
+            except struct.error as e:
+                raise ValueError(f"Failed to decode header: {str(e)}")

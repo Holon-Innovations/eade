@@ -8,11 +8,7 @@ import zfec
 import struct
 import hashlib
 
-from eade.base_engine import BaseEngine
-
-# length of the header in each segment
-# this includes 16 bytes for the ID, 4 bytes for total_shares, 4 bytes for required_shares, and 8 bytes for data_length
-HEADER_LENGTH = 32
+from eade.base_engine import BaseEngine, HEADER_LENGTH
 
 class RaDEngine(BaseEngine):
     def __init__(
@@ -43,9 +39,9 @@ class RaDEngine(BaseEngine):
         segment_path = segments[0]
         id = None
         with open(segment_path, 'rb') as segment_file:
-            # read the first 32 bytes to get the metadata (16 bytes for ID, 4 for total_shares, 4 for required_shares, and 8 for data_length)
+            # read the first 48 bytes to get the metadata
             header = segment_file.read(HEADER_LENGTH)
-            id_bytes, self._total_shares, self._required_shares, self._data_length = struct.unpack(">16sIIQ", header)
+            id_bytes, self._total_shares, self._required_shares, which_segment, reserved1, reserved1, self._data_length = self.unpack_header(header)
 
             # convert the id from bytes to string
             id = str(uuid.UUID(bytes=id_bytes))

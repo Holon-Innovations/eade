@@ -176,12 +176,12 @@ class EaDEngine(BaseEngine):
         # add the original data length as a 4-byte header in each segment and write it to a file
         segment_paths = []
 
-        # create a header with id (16 bytes), total_shares (4 bytes), required_shares (4 bytes), and data_len (8 bytes)
+        # create id
         data_id = uuid.UUID(self._id).bytes
-        header = struct.pack(">16sIIQ", data_id, self._total_shares, self._required_shares, data_len)
 
         # create a segment for each encoded block
         for i, segment in enumerate(encoded_blocks):
+            header = self.pack_header(data_id=data_id, total_shares=self._total_shares, required_shares=self._required_shares, which_segment=i, data_len=data_len)
             segment_with_header = header + segment  # concatenate header and segment
             segment_path = os.path.join(self.output_path, f"segment.{i}")
             with open(segment_path, 'wb') as segment_file:
