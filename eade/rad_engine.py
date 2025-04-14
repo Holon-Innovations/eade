@@ -7,6 +7,7 @@ import os
 import zfec
 import struct
 import hashlib
+from typing import Optional
 
 from eade.base_engine import BaseEngine, HEADER_LENGTH
 
@@ -20,7 +21,7 @@ class RaDEngine(BaseEngine):
             success_callback_func=None,
             exception_callback_func=None,
             progress_callback_func=None,
-            restored_file_name: str = None,
+            restored_file_name: Optional[str] = None,
             hash_results: bool = True):
         """
         Initializes the engine with decryption parameters.

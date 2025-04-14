@@ -8,6 +8,7 @@ import struct
 import math
 import uuid
 import hashlib
+from typing import Optional
 
 from eade.base_engine import BaseEngine
 
@@ -18,8 +19,8 @@ class EaDEngine(BaseEngine):
             required_shares: int,
             total_shares: int,
             output_path: str,
-            key: bytes = None,
-            iv: bytes = None,
+            key: Optional[bytes] = None,
+            iv: Optional[bytes] = None,
             success_callback_func = None,
             exception_callback_func = None,
             progress_callback_func = None,

@@ -3,6 +3,7 @@ import threading
 import time
 import struct
 import uuid
+from typing import Optional
 
 # header length in bytes
 # this includes 16 bytes for the ID, 4 bytes for total_shares, 4 bytes for required_shares, which_segment (4 bytes), reserved (4 bytes), reserved (8 bytes), and data_length (8 bytes)
@@ -82,7 +83,7 @@ class BaseEngine:
             if self._progress_callback_func:
                 self._progress_callback_func(self._id, value)
 
-    def _update_completed(self, value: bool, exception: Exception = None) -> None:
+    def _update_completed(self, value: bool, exception: Optional[Exception] = None) -> None:
         with self._lock:
             self._completed = value
             if exception:
@@ -112,7 +113,7 @@ class BaseEngine:
         # data_len (8 bytes)
         return struct.pack(">16sIIIIQQ", data_id, total_shares, required_shares, which_segment, 0, 0, data_len)
 
-    def unpack_header(self, header: bytes) -> dict:
+    def unpack_header(self, header: bytes) -> tuple:
         return struct.unpack(">16sIIIIQQ", header)
 
     def decode_header(self, segment_path: str) -> dict:
